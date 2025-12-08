@@ -1,4 +1,4 @@
-import { ChatRoom } from "../../src/types";
+import { ChatRoom } from '../types';
 declare const router: import("express-serve-static-core").Router;
 declare const chatRooms: Map<string, ChatRoom>;
 export default router;

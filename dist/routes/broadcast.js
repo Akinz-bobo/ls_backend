@@ -47,13 +47,17 @@ router.post('/:broadcastId/start', (req, res) => {
         return res.status(409).json({ error: 'Broadcast already active' });
     }
     const broadcast = {
+        id: broadcastId,
         broadcastId,
+        broadcasterId: 'unknown',
         broadcaster: null,
+        title: 'Live Broadcast',
+        startTime: new Date(),
         broadcasterInfo: {
             username: 'Radio Host',
             stationName: 'LS Radio'
         },
-        listeners: new Set(),
+        listeners: new Map(),
         audioSources: new Map(),
         callQueue: [],
         activeCalls: new Map(),

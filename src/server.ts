@@ -35,9 +35,23 @@ app.use('/api/chat', chatRoutes)
 app.use('/api/broadcast', broadcastRoutes)
 app.use('/stream', streamRoutes)
 
-// Health check
+// Health check with chat metrics
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+  const { chatMetrics } = require('./utils/chat-metrics')
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    chat: chatMetrics.getMetrics()
+  })
+})
+
+// Detailed chat metrics endpoint
+app.get('/metrics/chat', (req, res) => {
+  const { chatMetrics } = require('./utils/chat-metrics')
+  res.json({
+    metrics: chatMetrics.getMetrics(),
+    timestamp: new Date().toISOString()
+  })
 })
 
 // Socket.IO setup

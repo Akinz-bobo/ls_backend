@@ -11,10 +11,14 @@ class BroadcastManager {
     }
     createSession() {
         return {
+            id: this.broadcastId,
             broadcastId: this.broadcastId,
+            broadcasterId: this.broadcasterInfo.userId || 'unknown',
             broadcaster: null,
+            title: this.broadcasterInfo.stationName || 'Live Broadcast',
+            startTime: new Date(),
             broadcasterInfo: this.broadcasterInfo,
-            listeners: new Set(),
+            listeners: new Map(),
             audioSources: new Map(),
             callQueue: [],
             activeCalls: new Map(),
@@ -59,7 +63,11 @@ class BroadcastManager {
         const broadcast = activeBroadcasts.get(this.broadcastId);
         if (!broadcast)
             return;
-        broadcast.listeners.add(socketId);
+        broadcast.listeners.set(socketId, {
+            socketId,
+            connectionTime: new Date(),
+            lastActivity: new Date()
+        });
         if (broadcast.listeners.size > broadcast.stats.peakListeners) {
             broadcast.stats.peakListeners = broadcast.listeners.size;
         }
@@ -91,6 +99,7 @@ function unifiedAudioHandler(io) {
     io.on('connection', (socket) => {
         console.log('🔗 Client connected:', socket.id);
         activeConnections.set(socket.id, {
+            socketId: socket.id,
             broadcastId: null,
             role: null,
             connectionTime: new Date(),

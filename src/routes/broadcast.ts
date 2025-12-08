@@ -53,13 +53,17 @@ router.post('/:broadcastId/start', (req: Request, res: Response) => {
   }
 
   const broadcast: BroadcastSession = {
+    id: broadcastId,
     broadcastId,
+    broadcasterId: 'unknown',
     broadcaster: null,
+    title: 'Live Broadcast',
+    startTime: new Date(),
     broadcasterInfo: {
       username: 'Radio Host',
       stationName: 'LS Radio'
     },
-    listeners: new Set(),
+    listeners: new Map(),
     audioSources: new Map(),
     callQueue: [],
     activeCalls: new Map(),

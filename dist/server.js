@@ -34,9 +34,22 @@ app.use(limiter);
 app.use('/api/chat', chat_1.default);
 app.use('/api/broadcast', broadcast_1.default);
 app.use('/stream', stream_1.default);
-// Health check
+// Health check with chat metrics
 app.get('/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    const { chatMetrics } = require('./utils/chat-metrics');
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        chat: chatMetrics.getMetrics()
+    });
+});
+// Detailed chat metrics endpoint
+app.get('/metrics/chat', (req, res) => {
+    const { chatMetrics } = require('./utils/chat-metrics');
+    res.json({
+        metrics: chatMetrics.getMetrics(),
+        timestamp: new Date().toISOString()
+    });
 });
 // Socket.IO setup
 const io = new socket_io_1.Server(server, {
