@@ -1,4 +1,4 @@
-import { Message, User } from '../entities';
+import { Message, User } from '../../domain/entities';
 
 interface SendMessageData {
   content: string;

@@ -5,7 +5,8 @@ import {
   GetChatHistoryUseCase,
   LikeMessageUseCase,
   JoinChatUseCase,
-  LeaveChatUseCase
+  LeaveChatUseCase,
+  ModerateMessageUseCase
 } from '../interfaces';
 
 interface SendMessageData {
