@@ -1,83 +1,54 @@
-import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import dotenv from 'dotenv';
 
-// Infrastructure
-import { InMemoryMessageRepository, InMemoryUserRepository } from './infrastructure/repositories';
-import { ChatSocketController, ChatHttpController } from './infrastructure/web/controllers';
-
-// Use Cases
-import {
-  SendMessage,
-  GetChatHistory,
-  LikeMessage,
-  JoinChat,
-  LeaveChat,
-  ModerateMessage
-} from './application/use-cases';
+dotenv.config();
 
 const app = express();
 const server = createServer(app);
-
-// Middleware
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
-}));
-app.use(express.json());
-
-// Dependency Injection
-const messageRepo = new InMemoryMessageRepository();
-const userRepo = new InMemoryUserRepository();
-
-const sendMessage = new SendMessage(messageRepo);
-const getChatHistory = new GetChatHistory(messageRepo);
-const likeMessage = new LikeMessage(messageRepo);
-const joinChat = new JoinChat(userRepo);
-const leaveChat = new LeaveChat(userRepo);
-const moderateMessage = new ModerateMessage(messageRepo);
-
-// Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST']
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    methods: ["GET", "POST"]
   }
 });
 
-const chatSocketController = new ChatSocketController(
-  io,
-  userRepo,
-  sendMessage,
-  getChatHistory,
-  likeMessage,
-  joinChat,
-  leaveChat,
-  moderateMessage
-);
+app.use(cors());
+app.use(express.json());
 
-const chatHttpController = new ChatHttpController(getChatHistory);
-
-// Routes
+// Basic health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'chat' });
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/chat/:broadcastId/history', async (req, res) => {
-  const { broadcastId } = req.params;
-  const limit = parseInt(req.query.limit as string) || 100;
-  const result = await chatHttpController.getHistory(broadcastId, limit);
-  res.json(result);
-});
-
-// Socket Events
+// Socket.IO for chat
 io.on('connection', (socket) => {
-  chatSocketController.handleConnection(socket);
+  console.log('User connected:', socket.id);
+
+  socket.on('join-broadcast', (broadcastId) => {
+    socket.join(`broadcast-${broadcastId}`);
+    console.log(`User ${socket.id} joined broadcast ${broadcastId}`);
+  });
+
+  socket.on('leave-broadcast', (broadcastId) => {
+    socket.leave(`broadcast-${broadcastId}`);
+    console.log(`User ${socket.id} left broadcast ${broadcastId}`);
+  });
+
+  socket.on('chat-message', (data) => {
+    socket.to(`broadcast-${data.broadcastId}`).emit('chat-message', data);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
 });
 
 const PORT = process.env.PORT || 3001;
+
 server.listen(PORT, () => {
-  console.log(`💬 Chat Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📡 Socket.IO server ready for connections`);
 });
