@@ -17,7 +17,7 @@ export declare class ChatHttpController {
     private getChatHistory;
     constructor(getChatHistory: GetChatHistoryUseCase);
     getHistory(broadcastId: string, limit?: number): Promise<{
-        messages: import("../../domain/entities").Message[];
+        messages: any;
         success: boolean;
     }>;
 }

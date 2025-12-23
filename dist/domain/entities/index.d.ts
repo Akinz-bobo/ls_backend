@@ -1,22 +1,29 @@
-export interface Message {
-    id: string;
-    content: string;
-    userId: string;
-    username: string;
-    userAvatar?: string;
-    broadcastId: string;
-    messageType: 'user' | 'system' | 'host' | 'moderator';
-    timestamp: Date;
-    likes: number;
-    isPinned: boolean;
-    isHighlighted: boolean;
-    isModerated: boolean;
-    replyTo?: string;
-}
 export interface User {
     id: string;
-    username: string;
-    avatar?: string;
-    role: 'host' | 'moderator' | 'user';
+    email: string;
+    firstName: string;
+    lastName: string;
+    createdAt: Date;
+}
+export interface Staff extends User {
+    role: string;
+    permissions: string[];
+}
+export interface Podcast {
+    id: string;
+    title: string;
+    description: string;
+    audioUrl: string;
+    duration: number;
+    createdAt: Date;
+}
+export interface LiveBroadcast {
+    id: string;
+    title: string;
+    description: string;
+    status: 'SCHEDULED' | 'LIVE' | 'ENDED';
+    startTime: Date;
+    endTime?: Date;
+    hostUserId: string;
 }
 //# sourceMappingURL=index.d.ts.map

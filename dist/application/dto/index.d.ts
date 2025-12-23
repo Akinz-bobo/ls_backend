@@ -1,32 +1,33 @@
-export interface JoinChatDto {
-    broadcastId: string;
+export interface LoginRequestDTO {
+    email: string;
+    password: string;
+}
+export interface LoginResponseDTO {
+    token: string;
     user: {
         id: string;
-        username: string;
-        avatar?: string;
-        role: 'host' | 'moderator' | 'user';
+        email: string;
+        firstName: string;
+        lastName: string;
     };
 }
-export interface SendMessageDto {
-    content: string;
-    broadcastId: string;
-    messageType?: 'user' | 'system' | 'host' | 'moderator';
-    replyTo?: string;
+export interface RegisterRequestDTO {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
 }
-export interface TypingDto {
-    broadcastId: string;
-    isTyping: boolean;
+export interface BroadcastStreamDTO {
+    id: string;
+    title: string;
+    status: string;
+    streamUrl?: string;
 }
-export interface LikeMessageDto {
-    messageId: string;
-}
-export interface SendMessageRequestDto {
-    content: string;
-    userId: string;
-    username: string;
-    userAvatar?: string;
-    broadcastId: string;
-    messageType?: string;
-    replyTo?: string;
+export interface PodcastResponseDTO {
+    id: string;
+    title: string;
+    description: string;
+    audioUrl: string;
+    duration: number;
 }
 //# sourceMappingURL=index.d.ts.map
