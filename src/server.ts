@@ -3,27 +3,7 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
-
-// Infrastructure
-import {
-  InMemoryMessageRepository,
-  InMemoryUserRepository,
-} from "./infrastructure/repositories";
-import {
-  ChatSocketController,
-  ChatHttpController,
-} from "./infrastructure/web/controllers";
 import broadcastSSEManager from "./infrastructure/sse/broadcast-sse-manager";
-
-// Use Cases
-import {
-  SendMessage,
-  GetChatHistory,
-  LikeMessage,
-  JoinChat,
-  LeaveChat,
-  ModerateMessage,
-} from "./application/use-cases";
 
 const app = express();
 const server = createServer(app);
@@ -37,17 +17,6 @@ app.use(
 );
 app.use(express.json());
 
-// Dependency Injection
-const messageRepo = new InMemoryMessageRepository();
-const userRepo = new InMemoryUserRepository();
-
-const sendMessage = new SendMessage(messageRepo);
-const getChatHistory = new GetChatHistory(messageRepo);
-const likeMessage = new LikeMessage(messageRepo);
-const joinChat = new JoinChat(userRepo);
-const leaveChat = new LeaveChat(userRepo);
-const moderateMessage = new ModerateMessage(messageRepo);
-
 // Socket.IO
 const io = new Server(server, {
   cors: {
@@ -55,16 +24,6 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
-
-const chatSocketController = new ChatSocketController(
-  sendMessage,
-  likeMessage,
-  joinChat,
-  leaveChat,
-  moderateMessage,
-  io
-);
-const chatHttpController = new ChatHttpController(getChatHistory);
 
 // Routes
 app.get("/health", (req, res) => {
@@ -88,7 +47,7 @@ app.get("/api/broadcasts/events/stats", (req, res) => {
   });
 });
 
-// Notify backend that a broadcast started (called from frontend API)
+// Notify backend that a broadcast started
 app.post("/api/broadcasts/notify/started", (req, res) => {
   try {
     const broadcastData = req.body;
@@ -102,15 +61,12 @@ app.post("/api/broadcasts/notify/started", (req, res) => {
       message: "Broadcast started event sent to all clients",
     });
   } catch (error) {
-    console.error(
-      "❌ [Backend] Error handling broadcast started notification:",
-      error
-    );
+    console.error("❌ [Backend] Error handling broadcast started notification:", error);
     res.status(500).json({ error: "Failed to send broadcast event" });
   }
 });
 
-// Notify backend that a broadcast ended (called from frontend API)
+// Notify backend that a broadcast ended
 app.post("/api/broadcasts/notify/ended", (req, res) => {
   try {
     const broadcastData = req.body;
@@ -124,31 +80,37 @@ app.post("/api/broadcasts/notify/ended", (req, res) => {
       message: "Broadcast ended event sent to all clients",
     });
   } catch (error) {
-    console.error(
-      "❌ [Backend] Error handling broadcast ended notification:",
-      error
-    );
+    console.error("❌ [Backend] Error handling broadcast ended notification:", error);
     res.status(500).json({ error: "Failed to send broadcast event" });
   }
 });
 
-app.get("/chat/:broadcastId/history", async (req, res) => {
-  const { broadcastId } = req.params;
-  const limit = parseInt(req.query.limit as string) || 100;
-  const result = await chatHttpController.getHistory(broadcastId, limit);
-  res.json(result);
-});
-
-// Socket Events
+// Basic chat functionality
 io.on("connection", (socket) => {
-  chatSocketController.handleConnection(socket);
+  console.log("User connected:", socket.id);
+
+  socket.on("join-broadcast", (broadcastId) => {
+    socket.join(`broadcast-${broadcastId}`);
+    console.log(`User ${socket.id} joined broadcast ${broadcastId}`);
+  });
+
+  socket.on("leave-broadcast", (broadcastId) => {
+    socket.leave(`broadcast-${broadcastId}`);
+    console.log(`User ${socket.id} left broadcast ${broadcastId}`);
+  });
+
+  socket.on("chat-message", (data) => {
+    socket.to(`broadcast-${data.broadcastId}`).emit("chat-message", data);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
 });
 
 const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
   console.log(`💬 Chat Server running on port ${PORT}`);
-  console.log(
-    `📡 SSE Broadcast Events available at http://localhost:${PORT}/api/broadcasts/events`
-  );
+  console.log(`📡 SSE Broadcast Events available at http://localhost:${PORT}/api/broadcasts/events`);
 });
