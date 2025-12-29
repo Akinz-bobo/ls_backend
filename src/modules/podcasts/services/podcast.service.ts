@@ -281,10 +281,9 @@ export class PodcastService {
       data: {
         title: episodeData.title,
         description: episodeData.description,
-        audioUrl: episodeData.audioUrl,
+        audioFile: episodeData.audioUrl,
         duration: episodeData.duration,
         episodeNumber: episodeData.episodeNumber,
-        seasonNumber: episodeData.seasonNumber,
         podcast: {
           connect: { id: podcastId }
         },
