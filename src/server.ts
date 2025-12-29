@@ -36,7 +36,10 @@ app.use(cors({
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  trustProxy: true // Explicitly trust proxy for Railway
+  standardHeaders: true,
+  legacyHeaders: false,
+  // Skip rate limiting validation for trusted proxies
+  skip: () => false
 });
 app.use(limiter);
 
