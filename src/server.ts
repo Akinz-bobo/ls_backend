@@ -35,7 +35,7 @@ app.use(cors({
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 500, // Increase limit to 500 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
   // Skip rate limiting validation for trusted proxies
