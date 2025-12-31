@@ -322,4 +322,34 @@ export class PodcastController {
       res.status(error.statusCode || 500).json({ error: error.message });
     }
   }
+
+  // Episode Comments
+  async createEpisodeComment(req: Request, res: Response): Promise<void> {
+    try {
+      const { episodeId } = req.params;
+      const commentData = { ...req.body, podcastEpisodeId: episodeId };
+      const userId = req.user!.id;
+      
+      const result = await this.commentService.createComment(commentData, userId);
+      res.status(201).json(result);
+    } catch (error: any) {
+      logger.error("Create episode comment error", { error: error.message });
+      res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  }
+
+  // Episode Reviews
+  async createEpisodeReview(req: Request, res: Response): Promise<void> {
+    try {
+      const { episodeId } = req.params;
+      const reviewData = { ...req.body, podcastEpisodeId: episodeId };
+      const userId = req.user!.id;
+      
+      const result = await this.reviewService.createReview(reviewData, userId);
+      res.status(201).json(result);
+    } catch (error: any) {
+      logger.error("Create episode review error", { error: error.message });
+      res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  }
 }

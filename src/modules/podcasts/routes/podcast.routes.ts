@@ -20,12 +20,12 @@ const upload = multer({
   },
 });
 
-// Public routes
-router.get("/", (req, res) => podcastController.getPodcasts(req, res));
-router.get("/:id", (req, res) => podcastController.getPodcastById(req, res));
-router.get("/:id/episodes", (req, res) => podcastController.getEpisodes(req, res));
-router.get("/:id/episodes/:episodeId", (req, res) => podcastController.getEpisodeById(req, res));
-router.get("/episodes/:episodeId", (req, res) => podcastController.getEpisodeById(req, res));
+// Public routes (with optional authentication for user-specific data)
+router.get("/", authMiddleware, (req, res) => podcastController.getPodcasts(req, res));
+router.get("/:id", authMiddleware, (req, res) => podcastController.getPodcastById(req, res));
+router.get("/:id/episodes", authMiddleware, (req, res) => podcastController.getEpisodes(req, res));
+router.get("/:id/episodes/:episodeId", authMiddleware, (req, res) => podcastController.getEpisodeById(req, res));
+router.get("/episodes/:episodeId", authMiddleware, (req, res) => podcastController.getEpisodeById(req, res));
 router.get("/:id/comments", (req, res) => podcastController.getComments(req, res));
 router.get("/:id/reviews", (req, res) => podcastController.getReviews(req, res));
 router.get("/:id/episodes/:episodeId/comments", (req, res) => podcastController.getEpisodeComments(req, res));
@@ -34,6 +34,8 @@ router.get("/:id/episodes/:episodeId/comments", (req, res) => podcastController.
 router.post("/:id/comments", authMiddleware, requireAuth, (req, res) => podcastController.createComment(req, res));
 router.post("/:id/reviews", authMiddleware, requireAuth, (req, res) => podcastController.createReview(req, res));
 router.post("/:id/favorite", authMiddleware, requireAuth, (req, res) => podcastController.toggleFavorite(req, res));
+router.post("/:id/episodes/:episodeId/comments", authMiddleware, requireAuth, (req, res) => podcastController.createEpisodeComment(req, res));
+router.post("/:id/episodes/:episodeId/reviews", authMiddleware, requireAuth, (req, res) => podcastController.createEpisodeReview(req, res));
 
 // Staff routes (protected)
 router.post("/", authMiddleware, requireStaff, upload.fields([{ name: 'coverImage', maxCount: 1 }]), (req, res) => podcastController.createPodcast(req, res));

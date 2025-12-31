@@ -695,10 +695,20 @@ export class PodcastService {
   }
 
   async toggleFavorite(podcastId: string, userId: string) {
+    // Check if user is staff or regular user
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const staff = await prisma.staff.findUnique({ where: { id: userId } });
+    
+    if (!user && !staff) {
+      throw { statusCode: 404, message: "User not found" };
+    }
+
     const existing = await prisma.favorite.findFirst({
       where: {
-        userId,
-        podcastId,
+        OR: [
+          { userId: user ? userId : undefined, podcastId },
+          { staffId: staff ? userId : undefined, podcastId },
+        ],
       },
     });
 
@@ -711,7 +721,7 @@ export class PodcastService {
     } else {
       const favorite = await prisma.favorite.create({
         data: {
-          userId,
+          ...(user ? { userId } : { staffId: userId }),
           podcastId,
         },
       });
