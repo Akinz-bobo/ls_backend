@@ -14,6 +14,7 @@ export interface AuthUser {
   profileImage?: string | null;
   userType: "user" | "staff";
   role?: string;
+  isApproved?: boolean;
 }
 
 declare global {
@@ -68,6 +69,7 @@ export async function authMiddleware(
           profileImage: staff.profileImage,
           userType: "staff",
           role: staff.role,
+          isApproved: staff.isApproved,
         };
       }
     } else {
